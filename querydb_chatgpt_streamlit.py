@@ -4,7 +4,7 @@ import pandas as pd  # Importing the pandas library for data manipulation
 from sqlalchemy import create_engine, inspect, text  # Importing SQLAlchemy for database operations
 import sys
 
-openai.api_key = "Your Api Key"  # Setting the OpenAI API key
+openai.api_key = "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"  # Setting the OpenAI API key
 
 # Create a connection to the database
 db_host = 'localhost'
@@ -19,8 +19,7 @@ st.title('DVD Rental Company')
 # Create a connection to the database
 # Try to create a database engine to connect to the database
 try:
-    # engine = create_engine(f'mysql+pymysql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}')
-    engine = create_engine('sqlite:///dvd_rental.db')
+    engine = create_engine(f'mysql+pymysql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}')
 
 except Exception as e:
     st.error(f'Could not connect to the database. Error: {e}')
