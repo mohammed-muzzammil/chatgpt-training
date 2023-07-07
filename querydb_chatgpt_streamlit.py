@@ -2,8 +2,9 @@ import openai  # Importing the OpenAI library
 import streamlit as st  # Importing the Streamlit library for building web applications
 import pandas as pd  # Importing the pandas library for data manipulation
 from sqlalchemy import create_engine, inspect, text  # Importing SQLAlchemy for database operations
+import sys
 
-openai.api_key = "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"  # Setting the OpenAI API key
+openai.api_key = "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"  # Setting the OpenAI API key
 
 # Create a connection to the database
 db_host = 'localhost'
@@ -18,7 +19,8 @@ st.title('DVD Rental Company')
 # Create a connection to the database
 # Try to create a database engine to connect to the database
 try:
-    engine = create_engine(f'mysql+pymysql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}')
+    # engine = create_engine(f'mysql+pymysql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}')
+    engine = create_engine('sqlite:///dvd_rental.db')
 
 except Exception as e:
     st.error(f'Could not connect to the database. Error: {e}')
@@ -92,7 +94,7 @@ def query_db(query):
     # Check the query for moderation and prompt injection
     if check_prompt(query) == "Y":
         st.write("Sorry, we cannot process this query")
-        return
+        sys.exit()
 
     # Create a prompt to query the database using GPT-3
     intro = """
@@ -127,8 +129,19 @@ def query_db(query):
     # Execute the query
     print("Executing the following query:" + pretty_code)
 
-    with engine.connect() as con:
-        df = pd.read_sql_query(sql=text(code), con=engine)
+    try:
+
+        with engine.connect() as con:
+            df = pd.read_sql_query(sql=text(code), con=engine)
+
+    except Exception as e:
+        st.write("Could not excute the below query, please be more specific")
+        with st.expander("See executed code"):
+            st.write(pretty_code)
+
+        with st.expander("See full error"):
+            st.write(str(e))
+        sys.exit()
 
     # Return the results
     return df, pretty_code
@@ -139,7 +152,7 @@ def query_db_customer(query, customer_id):
     # Check the query for moderation and prompt injection
     if check_prompt(query) == "Y":
         st.write("Sorry, we cannot process this query")
-        return
+        sys.exit()
 
     # Create a prompt that allows customer to query the database using GPT-3
     intro = """
@@ -179,8 +192,18 @@ def query_db_customer(query, customer_id):
     # Remove newlines from the code
     code = code.replace('\n', ' ')
 
-    with engine.connect() as con:
-        df = pd.read_sql_query(sql=text(code), con=engine)
+    try:
+        with engine.connect() as con:
+            df = pd.read_sql_query(sql=text(code), con=engine)
+
+    except Exception as e:
+        st.write("Could not excute the below query, please be more specific")
+        with st.expander("See executed code"):
+            st.write(pretty_code)
+        with st.expander("See full error"):
+            st.write(str(e))
+
+        sys.exit()
 
     summary = summarize_result(df, query)
 
@@ -229,6 +252,9 @@ with st.sidebar:
     with st.form(key='my_form_to_submit'):
         user_request = st.text_area("Let chatGPT to do SQL for you")
         submit_button = st.form_submit_button(label='Submit')
+
+with st.expander("See introspected DB structure"):
+    st.write(doc)
 
 if submit_button:  # If the submit button is clicked
     # Check if the user has entered a request
