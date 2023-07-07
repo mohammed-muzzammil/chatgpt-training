@@ -4,7 +4,7 @@ import pandas as pd  # Importing the pandas library for data manipulation
 from sqlalchemy import create_engine, inspect, text  # Importing SQLAlchemy for database operations
 import sys
 
-openai.api_key = "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"  # Setting the OpenAI API key
+openai.api_key = "Your Api Key"  # Setting the OpenAI API key
 
 # Create a connection to the database
 db_host = 'localhost'
